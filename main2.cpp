@@ -1,20 +1,20 @@
 #include <iostream>
 #include <utility>
 #include <vector>
-#include <set>
+#include <unordered_set>
 
 using namespace std;
 
 class team{
-  protected:
+protected:
     unsigned int capacity;
     vector<int> preferred;
     vector<int> tolerated;
-    vector<int> noway;
+    unordered_set<int> noway;
 
-  public:
+public:
     team() : capacity(0) {};
-    team(unsigned int capacity, vector<int> preferred, vector<int> tolerated, vector<int> noway){
+    team(unsigned int capacity, vector<int> preferred, vector<int> tolerated, unordered_set<int> noway){
       this->capacity=capacity;
       this->preferred=std::move(preferred);
       this->tolerated=std::move(tolerated);
@@ -22,14 +22,14 @@ class team{
     }
     team(int teamnum, unsigned int capacity, vector<int> preferred, vector<int> tolerated, int maxteamnumber){
       this->capacity=capacity;
-      set<int> used(preferred.begin(), preferred.end());
+      unordered_set<int> used(preferred.begin(), preferred.end());
       for (int i:tolerated) used.insert(i);
       used.insert(teamnum);
       this->preferred=std::move(preferred);
       this->tolerated=std::move(tolerated);
-      vector<int> nowayVec;
+      unordered_set<int> nowayVec;
       for (int i=1; i<=maxteamnumber; i++) {
-        if (used.find(i) == used.end()) nowayVec.push_back(i);
+        if (used.find(i) == used.end()) nowayVec.insert(i);
       }
       this->noway = std::move(nowayVec);
     }
@@ -39,7 +39,7 @@ class team{
     vector<int> * change_tolerated(){
       return & tolerated;
     }
-    vector<int> * change_noway(){
+    unordered_set<int> * change_noway(){
       return & noway;
     }
 };
