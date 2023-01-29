@@ -68,7 +68,7 @@ void dfs(vector<team> allTeam, vector<int> floors, int floor_num, vector<vector<
   for(int f=0;f< floors.size(); f++){
     // cout<<"floor "<<f<<"capacity: "<< floors[f];
     if(floors[f]<0 || floors[f]>og_floorCapacity[f]/4){
-      cout<<"floor capacity neg "<<endl;
+      // cout<<"floor capacity neg "<<endl;
       flag = false;
       break;
     }
@@ -86,10 +86,10 @@ void dfs(vector<team> allTeam, vector<int> floors, int floor_num, vector<vector<
   //   // cout<<endl;
   // }
   if(flag){
-    cout<<"********************************************************************pushing floor plan"<<endl;
+    // cout<<"********************************************************************pushing floor plan"<<endl;
     all_floorplans.push_back(floorplan);
   }
-    // if(all_visited) return;
+    if(all_visited) return;
   //check if valid recursion for floor plan
   // if( floors[floor_num]<0) return;
   
@@ -112,7 +112,7 @@ void dfs(vector<team> allTeam, vector<int> floors, int floor_num, vector<vector<
     int team_size = allTeam[i].capacity;
 
     int team_num = i+1;
-    cout<<"team: "<<team_num<<' ';
+    // cout<<"team: "<<team_num<<' ';
     for(int f=0;f<floors.size();f++){
       bool noway = false;
       for(int team_n1 : floorplan[f]){
@@ -138,7 +138,7 @@ void dfs(vector<team> allTeam, vector<int> floors, int floor_num, vector<vector<
       
     }
     // visited[i] = false;
-    cout<<endl;
+    // cout<<endl;
     
   }
   // visited[i] = false;
@@ -192,19 +192,34 @@ int main(){
   vector<bool> visited(allTeam.size(), false);
   dfs(allTeam, floorCapacity, 0, floorplan, visited, 0);
   cout<<"hello uhack"<<endl;
+  vector<vector<int>> result;
+  int max_count = 0;
   for(auto fl : all_floorplans){
     cout<<"building"<<endl;
+    int count =0;
     for(auto flr : fl){
       // cout<<"floor:" <<endl;
       for(auto team_num : flr){
+        count++;
         cout<<team_num<<' ';
       }
       cout<<endl;
+    }
+    if(count>max_count){
+      result = fl;
+      max_count = count;
     }
     cout<<endl;
   }
   
   cout<<"hello uhack 2"<<endl;
+  for(int flr = 0; flr<result.size(); flr++){
+    cout<<"Floor "<<flr+1<<" : ";
+    for(int tm=0;tm<result[flr].size();tm++){
+      cout<<result[flr][tm]<<' ';
+    }
+    cout<<endl;
+  }
   // floor A
   // vector<int> rank 
   // for (team i : allTeam){
