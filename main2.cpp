@@ -64,9 +64,13 @@ int main(){
   allTeam.push_back(team(10, 56, {2,6,7,11}, {4,5,8}, 11));
   allTeam.push_back(team(11, 49, {1,4,5}, {2,3,6,7,9,10}, 11));
 
-  vector<int> ranked = rankTeam(allTeam);
-  for(int i:ranked) cout << i << " ";
-  cout << endl;
+
+  cout<<"hello uhack"<<endl;
+  cout<<"hello uhack 2"<<endl;
+  // floor A
+  for (team i : allTeam){
+    for(int j: *i.change_noway()) cout << j << " ";
+    cout << endl;
+  }
   return 0;
 }
-
