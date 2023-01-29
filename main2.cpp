@@ -168,6 +168,7 @@ vector<int> stringToVec(const string& rawstring){
 string printVector(const vector<int>& raw){
   string out;
   for (int i:raw) out += to_string(i) + ",";
+  return out;
 }
 
 class Driver{
@@ -198,10 +199,10 @@ class Driver{
     void clearTeams() {allTeam.clear();}
     void debugTeam(){
       for (int i=0; i<allTeam.size(); i++){
-        cout << "Team: " << i+1 <<",capacity: "<<allTeam[i].capacity << "preferred: " <<
+        cout << "Team: " << i+1 <<",capacity: "<<allTeam[i].capacity << ", preferred: " <<
           printVector(vector<int>(allTeam[i].preferred.begin(), allTeam[i].preferred.end()))
-          << "tolerate: " << printVector(allTeam[i].tolerated) << "noway: " <<
-          printVector(vector<int>(allTeam[i].noway.begin(), allTeam[i].noway.end()));
+          << " tolerate: " << printVector(allTeam[i].tolerated) << " noway: " <<
+          printVector(vector<int>(allTeam[i].noway.begin(), allTeam[i].noway.end()))<< endl;
       }
     }
     
@@ -240,41 +241,83 @@ class Driver{
 
 int main() {
   Driver driver;
-  bool run = true;
-  while (run) {
-    int option;
-    cout << "choose option:\n"
-            "1) Set Floor Capacity\n"
-            "2) Add Team\n"
-            "3) Remove Team Number\n"
-            "4) Clear Teams\n"
-            "5) Calculate Best Layout\n"
-            "6) Print All Teams\n"
-            "else) stop\n";
-    cin >> option;
-    if (option == 1) {
-      cout << "Give me floor capacity (use comma for splitting): ";
-      string raw;
-      cin >> raw;
-      driver.setFloorCapacity(raw);
-    } else if (option == 2) {
-      cout << "Add team information (teamNum, capacity, preferred, tolerated, max number of team): ";
-      int tn, c, mtn;
-      string r1, r2;
-      cin >> tn; cin >> c; cin >> r1, cin >> r2, cin >> mtn;
-      driver.addTeam(tn, c, r1, r2, mtn);
-    } else if(option == 3){
-      cout << "which team: ";
-      int i; cin >> i;
-      driver.removeTeam(i);
-    } else if(option == 4){
-      cout << "All teams are clear\n";
-      driver.clearTeams();
-    } else if(option == 5) {
-      cout << driver.getBestLayout();
-    } else if(option == 6){
-      driver.debugTeam();
-    }else {run = false;}
+  // floor capacity
+  int floorNum;
+  cin >> floorNum;
+  string d1, d2;
+  for (int i=0; i< floorNum; i++) {
+    cin >> d1;
+    d2+=d1+',';
   }
+  d2.pop_back();
+  driver.setFloorCapacity(d2);
+
+  // team number
+  int teamNum;
+  cin >> teamNum;
+  for (int i=0; i<teamNum; i++){ //team
+    //strength
+    int str; cin >> str;
+    //prefer & tolerate
+    string prefer, tolerate;
+    int i1; cin >> i1;
+    for (int j=0; j< i1; j++) {
+      cin >> d1;
+      prefer+=d1+',';
+    }
+    prefer.pop_back();
+
+    cin >> i1;
+    for (int j=0; j< i1; j++) {
+      cin >> d1;
+      tolerate+=d1+',';
+    }
+    tolerate.pop_back();
+    driver.addTeam(i+1, str, prefer, tolerate, teamNum);
+  }
+
+  cout << driver.getBestLayout()<<endl;
   return 0;
 }
+//int main() {
+//  Driver driver;
+//  bool run = true;
+//  while (run) {
+//    int option;
+//    cout << "choose option:\n"
+//            "1) Set Floor Capacity\n"
+//            "2) Add Team\n"
+//            "3) Remove Team Number\n"
+//            "4) Clear Teams\n"
+//            "5) Calculate Best Layout\n"
+//            "6) Print All Teams\n"
+//            "7) stop\n";
+//    cin >> option;
+//    if (option == 1) {
+//      cout << "Give me floor capacity (use comma for splitting): ";
+//      string raw;
+//      cin >> raw;
+//      driver.setFloorCapacity(raw);
+//    } else if (option == 2) {
+//      cout << "Add team information (teamNum, capacity, preferred, tolerated, max number of team): ";
+//      int tn, c, mtn;
+//      string r1, r2;
+//      cin >> tn; cin >> c; cin >> r1, cin >> r2, cin >> mtn;
+//      driver.addTeam(tn, c, r1, r2, mtn);
+//    } else if(option == 3){
+//      cout << "which team: ";
+//      int i; cin >> i;
+//      driver.removeTeam(i);
+//    } else if(option == 4){
+//      cout << "All teams are clear\n";
+//      driver.clearTeams();
+//    } else if(option == 5) {
+//      cout << driver.getBestLayout();
+//    } else if(option == 6){
+//      driver.debugTeam();
+//    } else if (option == 7){
+//      run = false;
+//    }
+//  }
+//  return 0;
+//}
