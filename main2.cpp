@@ -1,19 +1,18 @@
 #include <iostream>
 #include <utility>
 #include <vector>
-#include <set>
 #include <unordered_set>
 
 using namespace std;
 
 class team{
-  protected:
+protected:
     unsigned int capacity;
     vector<int> preferred;
     vector<int> tolerated;
     unordered_set<int> noway;
 
-  public:
+public:
     team() : capacity(0) {};
     team(unsigned int capacity, vector<int> preferred, vector<int> tolerated, unordered_set<int> noway){
       this->capacity=capacity;
@@ -23,7 +22,7 @@ class team{
     }
     team(int teamnum, unsigned int capacity, vector<int> preferred, vector<int> tolerated, int maxteamnumber){
       this->capacity=capacity;
-      set<int> used(preferred.begin(), preferred.end());
+      unordered_set<int> used(preferred.begin(), preferred.end());
       for (int i:tolerated) used.insert(i);
       used.insert(teamnum);
       this->preferred=std::move(preferred);
