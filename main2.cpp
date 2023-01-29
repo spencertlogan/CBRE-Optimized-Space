@@ -44,7 +44,7 @@ class team{
     }
 };
 
-  
+
 
 int main(){
   vector<int> floorCapacity = {43, 81, 73, 54, 97};
@@ -61,7 +61,7 @@ int main(){
   allTeam.push_back(team(10, 56, {2,6,7,11}, {4,5,8}, 11));
   allTeam.push_back(team(11, 49, {1,4,5}, {2,3,6,7,9,10}, 11));
 
-
+  cout<<"hello uhack"<<endl;
   // floor A
   for (team i : allTeam){
     for(int j: *i.change_noway()) cout << j << " ";
@@ -69,3 +69,4 @@ int main(){
   }
   return 0;
 }
+
