@@ -48,9 +48,9 @@
                         result.Seats[seatKeyFromPosition(row,col)] = EMPTY;
                     }
                 }
-                <!-- Code below sets the color of each box based on their state -->
-                result.Seats[seatKeyFromPosition(0,2)] = RESERVED;
-                result.Seats[seatKeyFromPosition(2,1)] = BOUGHT;
+                <!-- This is where each -->
+                result.Seats[seatKeyFromPosition(1,4)] = RESERVED;
+                result.Seats[seatKeyFromPosition(3, 1)] = BOUGHT;
                 return result;
             }
             function renderSeat(ctx,r,fillColor) {
@@ -116,19 +116,8 @@
             }
         </script>
     </head>
-    <body > 
-        <!--Load in "seat info" based on the matrix dimensions -->
-        
-        <div id = "First Floor" onload="renderSeatplan(getSeatInfo(3, 4));">
-        <h1>Floor A</h1>
+    <body onload="renderSeatplan(getSeatInfo(8,8));">
+        <h1>Seatplan</h1>
         <canvas id="seatplan" width="640" height="480"></canvas>
-    </div>
-
-        <div id = "Second Floor " onload="renderSeatplan(getSeatInfo(2, 4));">
-        <h1>Floor B</h1>
-        <canvas id="seatplan" width="640" height="480"></canvas>
-    </div>
     </body>
-
-
 </html>
