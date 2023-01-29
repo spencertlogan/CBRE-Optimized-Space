@@ -2,17 +2,12 @@
 #include <utility>
 #include <vector>
 #include <unordered_set>
-#include<climits>
+#include <string>
+#include <sstream>
 
 using namespace std;
 
-const float FLOORBOUNUS = 1;
-const float BUILDINGBOUNUS = 0;
-const float FLOORPUNISH = FLOORBOUNUS;
-const float BUILDINGPUNISH = 0;
-
-
-class team{
+class Team{
 public:
   unsigned int capacity;
   unordered_set<int> preferred;
@@ -20,19 +15,19 @@ public:
   unordered_set<int> noway;
 
 public:
-  team() : capacity(0) {};
-  team(unsigned int capacity, unordered_set<int> preferred, vector<int> tolerated, unordered_set<int> noway){
+  Team() : capacity(0) {};
+  Team(unsigned int capacity, unordered_set<int> preferred, vector<int> tolerated, unordered_set<int> noway){
     this->capacity=capacity;
     this->preferred=std::move(preferred);
     this->tolerated=std::move(tolerated);
     this->noway=std::move(noway);
   }
-  team(int teamnum, unsigned int capacity, unordered_set<int> preferred, vector<int> tolerated, int maxteamnumber){
+  Team(int teamnum, unsigned int capacity, vector<int> preferred, vector<int> tolerated, int maxteamnumber){
     this->capacity=capacity;
     unordered_set<int> used(preferred.begin(), preferred.end());
     for (int i:tolerated) used.insert(i);
     used.insert(teamnum);
-    this->preferred=std::move(preferred);
+    this->preferred=unordered_set<int>(preferred.begin(), preferred.end());
     this->tolerated=std::move(tolerated);
     unordered_set<int> nowayVec;
     for (int i=1; i<=maxteamnumber; i++) {
@@ -43,12 +38,11 @@ public:
 };
 
 vector<vector<vector<int>>> all_floorplans;
-vector<int> og_floorCapacity;
 
-vector<int> rankTeam(vector<team> &allTeam){
+vector<int> rankTeam(vector<Team> &allTeam){
   vector<int> out(allTeam.size(), 0);
-  for (int i=0; i<allTeam.size(); i++){  // loop team
-    for (int j : allTeam[i].preferred){  // loop team preference
+  for (int i=0; i<allTeam.size(); i++){  // loop Team
+    for (int j : allTeam[i].preferred){  // loop Team preference
       if ((allTeam[j-1].noway).find(i+1) == (allTeam[j-1].noway).end()) {// check for noway conflict
         out[j-1]++;
       }
@@ -57,13 +51,13 @@ vector<int> rankTeam(vector<team> &allTeam){
   return out;
 }
 
-void dfs(vector<team> allTeam, vector<int> floors, vector<vector<int>> floorplan, vector<bool> visited){
+void dfs(vector<Team> allTeam, vector<int> floors, vector<vector<int>> floorplan, vector<bool> visited, vector<int> og_floorCapacity){
   // all_floorplans.push_back(floorplan);
   bool all_visited = true;
   for(auto vis : visited){
     if(!vis) all_visited = false;
   }
-    //if no floor has space left for any team then add floor plan to the all floor plans
+    //if no floor has space left for any Team then add floor plan to the all floor plans
   bool flag = true;
   for(int f=0;f< floors.size(); f++){
     // cout<<"floor "<<f<<"capacity: "<< floors[f];
@@ -75,7 +69,7 @@ void dfs(vector<team> allTeam, vector<int> floors, vector<vector<int>> floorplan
     for(int t=0; t< allTeam.size();t++){
       if(allTeam[t].capacity<=floors[f] && !visited[t]){
         flag = false;
-//         cout<<"floor capacity exceeds team count"<<endl;
+//         cout<<"floor capacity exceeds Team count"<<endl;
         break;
       }
     }
@@ -111,35 +105,35 @@ void dfs(vector<team> allTeam, vector<int> floors, vector<vector<int>> floorplan
       }
 
       floorplan[f].push_back(team_num);
-      dfs(allTeam, floors, floorplan, visited);
+      dfs(allTeam, floors, floorplan, visited, og_floorCapacity);
       floorplan[f].pop_back();
       floors[f]+=team_size;
     }
   }
 }
 
-float calScoreFloor(const vector<int>& floor, const vector<team> & teams){
+float calScoreFloor(const vector<int>& floor, const vector<Team> & teams, float floorbonus, float floorpunish){
   float out=0;
   for (int i : floor){
     for (int j : floor) {
       if (i!=j){
-        if (teams[i-1].preferred.find(j) != teams[i-1].preferred.end()) out+=FLOORBOUNUS;
-        else if (teams[i-1].noway.find(j) != teams[i-1].noway.end())  out-=FLOORPUNISH;
+        if (teams[i-1].preferred.find(j) != teams[i-1].preferred.end()) out+=floorbonus;
+        else if (teams[i-1].noway.find(j) != teams[i-1].noway.end())  out-=floorpunish;
       }
     }
   }
   return out;
 }
 
-float calScoreBuilding(const vector<vector<int>>& groups, const vector<team> & teams){
+float calScoreBuilding(const vector<vector<int>>& groups, const vector<Team> & teams, float buildingbonus, float buildingpunish){
   float out=0;
   for (int i=0; i<groups.size(); i++){  // target floor
     for(int j=0; j<groups.size(); j++){  // other floors
       if (i!=j) {
         for (int x : groups[i])  {  //target group on floors
           for (int y : groups[j]) {
-            if (teams[y-1].preferred.find(x) != teams[y-1].preferred.end()) out += BUILDINGBOUNUS;
-            if (teams[y-1].noway.find(x) != teams[y-1].noway.end()) out += BUILDINGPUNISH;
+            if (teams[y-1].preferred.find(x) != teams[y-1].preferred.end()) out += buildingbonus;
+            if (teams[y-1].noway.find(x) != teams[y-1].noway.end()) out += buildingpunish;
           }
         }
       }
@@ -148,54 +142,139 @@ float calScoreBuilding(const vector<vector<int>>& groups, const vector<team> & t
   return out;
 }
 
-float calScorePlan(const vector<vector<int>>& groups, vector<team> & teams){
+float calScorePlan(const vector<vector<int>>& groups, vector<Team> & teams, float floorbonus, float floorpunish,
+                   float buildingbonus, float buildingpunish){
   float out = 0;
   for(const vector<int>& floor : groups) {
-    float score = calScoreFloor(floor, teams);
+    float score = calScoreFloor(floor, teams, floorbonus, floorpunish);
     out += score;
   }
-  out += calScoreBuilding(groups, teams);
+  out += calScoreBuilding(groups, teams, buildingbonus, buildingpunish);
   return out;
 }
 
-
-int main(){
-  vector<int> floorCapacity = {43, 81, 73, 54, 97};
-  og_floorCapacity = floorCapacity;
-  vector<team> allTeam;
-  // allTeam.push_back(team(0, 0, {0}, {0}, 0));
-  allTeam.push_back(team(1, 22, {2,4,6,11}, {3,8,10}, 11));
-  allTeam.push_back(team(2, 45, {1,3,5}, {6,7,11}, 11));
-  allTeam.push_back(team(3, 34, {1,2,11}, {7}, 11));
-  allTeam.push_back(team(4, 51, {10}, {1,3}, 11));
-  allTeam.push_back(team(5, 11, {1,2,3,4}, {9,10,11}, 11));
-  allTeam.push_back(team(6, 37, {7,10}, {1,8}, 11));
-  allTeam.push_back(team(7, 42, {1,2,3,4,5,6}, {10,11}, 11));
-  allTeam.push_back(team(8, 16, {1,10}, {2,4,11}, 11));
-  allTeam.push_back(team(9, 29, {1,5}, {2,10}, 11));
-  allTeam.push_back(team(10, 56, {2,6,7,11}, {4,5,8}, 11));
-  allTeam.push_back(team(11, 49, {1,4,5}, {2,3,6,7,9,10}, 11));
-
-  vector<vector<int>> floorplan(floorCapacity.size(), vector<int>());
-  vector<bool> visited(allTeam.size(), false);
-  dfs(allTeam, floorCapacity, floorplan, visited);
-
-  vector<vector<int>> result;
-  float max_score = 0;
-  for(const auto& fl : all_floorplans){
-    float score = calScorePlan(fl, allTeam);
-    if(score > max_score){
-      result = fl;
-      max_score = score;
-    }
+vector<int> stringToVec(const string& rawstring){
+  // helper to help convert string to int vector
+  vector<int> out;
+  stringstream ss(rawstring);
+  string capacity;
+  while (!ss.eof()) {
+    getline(ss, capacity, ',');
+    out.push_back(stoi(capacity));
   }
-  for(int flr = 0; flr<result.size(); flr++){
-    cout<<"Floor "<<flr+1<<" : ";
-    for(int tm : result[flr]){
-      cout<<tm<<' ';
+  return out;
+}
+
+string printVector(const vector<int>& raw){
+  string out;
+  for (int i:raw) out += to_string(i) + ",";
+}
+
+class Driver{
+  protected:
+    vector<int> floorCapacity;
+    vector<int> og_floorCapacity;
+    vector<Team> allTeam;
+    float floorBonus = 1;
+    float buildingBonus = 0;
+    float floorPunish = floorBonus;
+    float buildingPunish = 0;
+  public:
+    void setFloorCapacity(const string& floordata){
+      clearFloorCapacity();
+      floorCapacity = stringToVec(floordata);
+      og_floorCapacity = floorCapacity;
     }
-    cout<<endl;
+    void clearFloorCapacity(){
+      floorCapacity={};
+      og_floorCapacity={};
+    }
+    void addTeam(int teamNum, int capacity, const string& preferred, const string& tolerated, int maxteamnumber){
+      vector<int> preferredVec = stringToVec(preferred);
+      vector<int> toleratedVec = stringToVec(tolerated);
+      allTeam.emplace_back(teamNum, capacity, preferredVec, toleratedVec, maxteamnumber);
+    }
+    void removeTeam(int teamNum) {allTeam.erase(allTeam.begin() + teamNum-1);}
+    void clearTeams() {allTeam.clear();}
+    void debugTeam(){
+      for (int i=0; i<allTeam.size(); i++){
+        cout << "Team: " << i+1 <<",capacity: "<<allTeam[i].capacity << "preferred: " <<
+          printVector(vector<int>(allTeam[i].preferred.begin(), allTeam[i].preferred.end()))
+          << "tolerate: " << printVector(allTeam[i].tolerated) << "noway: " <<
+          printVector(vector<int>(allTeam[i].noway.begin(), allTeam[i].noway.end()));
+      }
+    }
+    
+    void setFloorBonus(float i) {floorBonus=i;}
+    void setFloorPunish(float i) {floorPunish=i;}
+    void setBuildingBonus(float i) {buildingBonus=i;}
+    void setBuildingPunish(float i) {buildingPunish=i;}
+    
+    string getBestLayout(){
+      vector<vector<int>> floorplan(floorCapacity.size(), vector<int>());
+      vector<bool> visited(allTeam.size(), false);
+      dfs(allTeam, floorCapacity, floorplan, visited, og_floorCapacity);
+
+      vector<vector<int>> result;
+      float max_score = 0;
+      for(const auto& fl : all_floorplans){
+        float score = calScorePlan(fl, allTeam, floorBonus, floorPunish,
+                                   buildingBonus, buildingPunish);
+        if(score > max_score){
+          result = fl;
+          max_score = score;
+        }
+      }
+      string out;
+      for(int flr = 0; flr<result.size(); flr++){
+        out += "Floor " + to_string(flr+1) + " : ";
+        for(int tm : result[flr]){
+          out += to_string(tm) + ' ';
+        }
+        out += "\n";
+      }
+      out += "Design rating: " + to_string(max_score);
+      return out;
+    }
+};
+
+int main() {
+  Driver driver;
+  bool run = true;
+  while (run) {
+    int option;
+    cout << "choose option:\n"
+            "1) Set Floor Capacity\n"
+            "2) Add Team\n"
+            "3) Remove Team Number\n"
+            "4) Clear Teams\n"
+            "5) Calculate Best Layout\n"
+            "6) Print All Teams\n"
+            "else) stop\n";
+    cin >> option;
+    if (option == 1) {
+      cout << "Give me floor capacity (use comma for splitting): ";
+      string raw;
+      cin >> raw;
+      driver.setFloorCapacity(raw);
+    } else if (option == 2) {
+      cout << "Add team information (teamNum, capacity, preferred, tolerated, max number of team): ";
+      int tn, c, mtn;
+      string r1, r2;
+      cin >> tn; cin >> c; cin >> r1, cin >> r2, cin >> mtn;
+      driver.addTeam(tn, c, r1, r2, mtn);
+    } else if(option == 3){
+      cout << "which team: ";
+      int i; cin >> i;
+      driver.removeTeam(i);
+    } else if(option == 4){
+      cout << "All teams are clear\n";
+      driver.clearTeams();
+    } else if(option == 5) {
+      cout << driver.getBestLayout();
+    } else if(option == 6){
+      driver.debugTeam();
+    }else {run = false;}
   }
-  cout << "final rating " << max_score << endl;
   return 0;
 }
