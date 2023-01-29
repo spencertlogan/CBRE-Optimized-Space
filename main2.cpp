@@ -62,6 +62,7 @@ int main(){
   allTeam.push_back(team(11, 49, {1,4,5}, {2,3,6,7,9,10}, 11));
 
   cout<<"hello uhack"<<endl;
+  cout<<"hello uhack 2"<<endl;
   // floor A
   for (team i : allTeam){
     for(int j: *i.change_noway()) cout << j << " ";
