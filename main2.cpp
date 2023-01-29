@@ -5,23 +5,28 @@
 
 using namespace std;
 
+const float FLOORBOUNUS = 1;
+const float BUILDINGBOUNUS = 0.25;
+const float FLOORPUNISH = FLOORBOUNUS;
+const float BUILDINGPUNISH = 0;
+
 class team{
 public:
     unsigned int capacity;
-    vector<int> preferred;
+    unordered_set<int> preferred;
     vector<int> tolerated;
     unordered_set<int> noway;
     int rank_score=0;
 
 public:
     team() : capacity(0) {};
-    team(unsigned int capacity, vector<int> preferred, vector<int> tolerated, unordered_set<int> noway){
+    team(unsigned int capacity, unordered_set<int> preferred, vector<int> tolerated, unordered_set<int> noway){
       this->capacity=capacity;
       this->preferred=std::move(preferred);
       this->tolerated=std::move(tolerated);
       this->noway=std::move(noway);
     }
-    team(int teamnum, unsigned int capacity, vector<int> preferred, vector<int> tolerated, int maxteamnumber){
+    team(int teamnum, unsigned int capacity, unordered_set<int> preferred, vector<int> tolerated, int maxteamnumber){
       this->capacity=capacity;
       unordered_set<int> used(preferred.begin(), preferred.end());
       for (int i:tolerated) used.insert(i);
@@ -48,6 +53,46 @@ vector<int> rankTeam(vector<team> &allTeam){
   return out;
 }
 
+//(1,2,3)
+float calScoreFloor(const vector<int>& floor, const vector<team> & teams){
+  float out=0;
+    for (int i : floor){
+      for (int j : floor) {
+        if (i!=j){
+          if (teams[i-1].preferred.find(j) != teams[i-1].preferred.end()) out+=FLOORBOUNUS;
+          else if (teams[i-1].noway.find(j) != teams[i-1].noway.end())  out-=FLOORPUNISH;
+        }
+      }
+    }
+  return out;
+}
+
+float calScoreBuilding(const vector<vector<int>>& groups, const vector<team> & teams){
+  float out=0;
+  for (int i=0; i<groups.size(); i++){  // target floor
+    for(int j=0; j<groups.size(); j++){  // other floors
+      if (i!=j) {
+        for (int x : groups[i])  {  //target group on floors
+          for (int y : groups[j]) {
+            if (teams[y-1].preferred.find(x) != teams[y-1].preferred.end()) out += BUILDINGBOUNUS;
+            if (teams[y-1].noway.find(x) != teams[y-1].noway.end()) out += BUILDINGPUNISH;
+          }
+        }
+      }
+    }
+  }
+  return out;
+}
+
+float calScorePlan(const vector<vector<int>>& groups, vector<team> & teams){
+  float out = 0;
+  for(const vector<int>& floor : groups) {
+    float score = calScoreFloor(floor, teams);
+    out += score;
+  }
+  out += calScoreBuilding(groups, teams);
+  return out;
+}
 
 int main(){
   vector<int> floorCapacity = {43, 81, 73, 54, 97};
@@ -64,13 +109,7 @@ int main(){
   allTeam.push_back(team(10, 56, {2,6,7,11}, {4,5,8}, 11));
   allTeam.push_back(team(11, 49, {1,4,5}, {2,3,6,7,9,10}, 11));
 
+  cout << calScorePlan({{1,2}, {3}}, allTeam) << endl;
 
-  cout<<"hello uhack"<<endl;
-  cout<<"hello uhack 2"<<endl;
-  // floor A
-  for (team i : allTeam){
-    for(int j: *i.change_noway()) cout << j << " ";
-    cout << endl;
-  }
   return 0;
 }
