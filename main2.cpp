@@ -2,11 +2,13 @@
 #include <utility>
 #include <vector>
 #include <unordered_set>
+#include<climits>
 
 using namespace std;
-
+int score;
 class team{
 public:
+  int tnum;
     unsigned int capacity;
     vector<int> preferred;
     vector<int> tolerated;
@@ -33,8 +35,13 @@ public:
         if (used.find(i) == used.end()) nowayVec.insert(i);
       }
       this->noway = std::move(nowayVec);
+      this->tnum = teamnum;
     }
 };
+
+vector<vector<vector<int>>> all_floorplans;
+int min_size=INT_MAX;
+vector<int> og_floorCapacity;
 
 vector<int> rankTeam(vector<team> &allTeam){
   vector<int> out(allTeam.size(), 0);
@@ -48,10 +55,127 @@ vector<int> rankTeam(vector<team> &allTeam){
   return out;
 }
 
+void dfs(vector<team> allTeam, vector<int> floors, int floor_num, vector<vector<int>> floorplan, vector<bool> visited, int idx){
+  
+  
+    // all_floorplans.push_back(floorplan);
+  bool all_visited = true;
+  for(auto vis : visited){
+    if(!vis) all_visited = false;
+  }
+    //if no floor has space left for any team then add floor plan to the all floor plans
+  bool flag = true;
+  for(int f=0;f< floors.size(); f++){
+    // cout<<"floor "<<f<<"capacity: "<< floors[f];
+    if(floors[f]<0 || floors[f]>og_floorCapacity[f]/4){
+      cout<<"floor capacity neg "<<endl;
+      flag = false;
+      break;
+    }
+    for(int t=0; t< allTeam.size();t++){
+      if(allTeam[t].capacity<=floors[f] && !visited[t]){
+        flag = false;
+        // cout<<"floor capacity exceeds team count"<<endl;
+        break;
+      }
+    }
+  }
+  // bool flag2 = true;
+  // for(int t=0;t< allTeam.size();t++){
+  //     if(!visited[t]) flag2 = false; 
+  //   // cout<<endl;
+  // }
+  if(flag){
+    cout<<"********************************************************************pushing floor plan"<<endl;
+    all_floorplans.push_back(floorplan);
+  }
+    // if(all_visited) return;
+  //check if valid recursion for floor plan
+  // if( floors[floor_num]<0) return;
+  
+
+  // if(floors[floor_num]<allTeam[idx].capacity) return;
+
+  
+    
+  for(int i =0;i<allTeam.size();i++){
+    if(visited[i]) continue;
+    visited[i] = true;
+    // bool exists = false;
+    // for(auto flr : floorplan){
+    //     for(int alloted_team : flr){
+    //       if(alloted_team == i+1) exists = true;
+    //     }
+    // }
+    // if(exists) continue;
+
+    int team_size = allTeam[i].capacity;
+
+    int team_num = i+1;
+    cout<<"team: "<<team_num<<' ';
+    for(int f=0;f<floors.size();f++){
+      bool noway = false;
+      for(int team_n1 : floorplan[f]){
+        if(allTeam[team_n1 - 1].noway.find(team_num) != allTeam[team_n1 - 1].noway.end()) noway=true;
+      }
+      if(noway) {
+        noway = false;
+        continue;
+      }
+      if(floors[f]-team_size>=0){
+        floors[f]-=team_size;
+      } else{
+        continue;
+      }
+
+      // cout<<"****** floor "<< f<< "size "<<floors[f]<<endl;
+      floorplan[f].push_back(team_num);
+      // cout<<"floor: "<<f<<' ';
+      
+      dfs(allTeam, floors, f, floorplan, visited, i+1);
+      floorplan[f].pop_back();
+      floors[f]+=team_size;
+      
+    }
+    // visited[i] = false;
+    cout<<endl;
+    
+  }
+  // visited[i] = false;
+  
+
+
+}
+
+// void dfs2 (vector<team> allTeam, vector<vector<int>> floorplan, vector<int> floors){
+//   for(auto team : allTeam){
+//     int team_num = team.tnum;
+//     int team_size = team.capacity;
+//     for(int flr=0;flr< floors.size(); flr++){
+//       bool exists = false;
+//       for(auto f : floorplan){
+//         for(int allc_team : f){
+//           if(allc_team == team_num) exists = true;
+//         }
+//       }
+//       if(exists) continue;
+//       if(floors[flr]-team_size>=0){
+//         floors[flr] -= team_size;
+//         floorplan[flr].push_back(team_num);
+//         dfs2(allTeam, floorplan, floors);
+//       }
+      
+//     }
+//   }
+// }
+
+
 
 int main(){
   vector<int> floorCapacity = {43, 81, 73, 54, 97};
+  og_floorCapacity = floorCapacity;
   vector<team> allTeam;
+  // allTeam.push_back(team(0, 0, {0}, {0}, 0));
   allTeam.push_back(team(1, 22, {2,4,6,11}, {3,8,10}, 11));
   allTeam.push_back(team(2, 45, {1,3,5}, {6,7,11}, 11));
   allTeam.push_back(team(3, 34, {1,2,11}, {7}, 11));
@@ -64,13 +188,29 @@ int main(){
   allTeam.push_back(team(10, 56, {2,6,7,11}, {4,5,8}, 11));
   allTeam.push_back(team(11, 49, {1,4,5}, {2,3,6,7,9,10}, 11));
 
-
+  vector<vector<int>> floorplan(floorCapacity.size(), vector<int>());
+  vector<bool> visited(allTeam.size(), false);
+  dfs(allTeam, floorCapacity, 0, floorplan, visited, 0);
   cout<<"hello uhack"<<endl;
+  for(auto fl : all_floorplans){
+    cout<<"building"<<endl;
+    for(auto flr : fl){
+      // cout<<"floor:" <<endl;
+      for(auto team_num : flr){
+        cout<<team_num<<' ';
+      }
+      cout<<endl;
+    }
+    cout<<endl;
+  }
+  
   cout<<"hello uhack 2"<<endl;
   // floor A
-  for (team i : allTeam){
-    for(int j: *i.change_noway()) cout << j << " ";
-    cout << endl;
-  }
+  // vector<int> rank 
+  // for (team i : allTeam){
+
+  //   for(int j: *i.change_noway()) cout << j << " ";
+  //   cout << endl;
+  // }
   return 0;
 }
