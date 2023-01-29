@@ -234,7 +234,15 @@ class Driver{
         }
         out += "\n";
       }
-      out += "Design rating: " + to_string(max_score);
+      out += "Not in building : ";
+      unordered_set<int> hasSpace;
+      for (const vector<int>& i : result){
+        for (int j : i) hasSpace.insert(j);
+      }
+      for (int i=0; i<allTeam.size(); i++){
+        if (hasSpace.find(i+1) == hasSpace.end()) out += to_string(i+1) + " ";
+      }
+      out += "\nDesign rating: " + to_string(max_score) + "\n-----\n";
       return out;
     }
 };
@@ -249,9 +257,11 @@ int main() {
             "2) Add Team\n"
             "3) Remove Team Number\n"
             "4) Clear Teams\n"
-            "5) Calculate Best Layout\n"
-            "6) Print All Teams\n"
-            "7) stop\n";
+            "5) Print All Teams\n"
+            "6) Change floor accommodation factor\n"
+            "7) Change building accommodation factor\n"
+            "8) Calculate Best Layout\n"
+            "9) stop\n";
     cin >> option;
     if (option == 1) {
       cout << "Give me floor capacity (use comma for splitting): ";
@@ -271,11 +281,23 @@ int main() {
     } else if(option == 4){
       cout << "All teams are clear\n";
       driver.clearTeams();
-    } else if(option == 5) {
-      cout << driver.getBestLayout();
-    } else if(option == 6){
+    } else if(option == 5){
       driver.debugTeam();
-    } else if (option == 7){
+    } else if (option == 6) {
+      float i;
+      cout << "  a) Change floor bonus factor: ";
+      cin >> i; driver.setFloorBonus(i);
+      cout << "  b) Change floor punish factor: ";
+      cin >> i; driver.setFloorPunish(i);
+    } else if (option == 7) {
+      float i;
+      cout << "  a) Change building bonus factor: ";
+      cin >> i; driver.setBuildingBonus(i);
+      cout << "  b) Change building punish factor: ";
+      cin >> i; driver.setBuildingPunish(i);
+    } else if(option == 8) {
+      cout << driver.getBestLayout();
+    } else if (option == 9) {
       run = false;
     }
   }
