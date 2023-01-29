@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html>
+    
+    <head>
+        <title>CBRE Project Display</title>
+        <link rel="stylesheet" href="test.css">
+        <script>
+            var EMPTY = 0; // Still available for reservation and purchase.
+            var TEAM1 = 1; 
+            var TEAM2 = 2; 
+            var TEAM3 = 3; 
+            var TEAM4 = 4;
+            var TEAM5 = 5;
+            var TEAM6 = 6;
+            var TEAM7 = 7;
+            var TEAM8 = 8;
+            var TEAM9 = 9;
+            var TEAM10 = 10;
+            var TEAM11 = 11;
+
+            function Point(x,y) {
+                return { X: x, Y: y }
+            }
+            function Size(w,h) {
+                return {Width: w, Height: h}
+            }
+            function Rectangle(left,top,width,height) {
+                return {TopLeft: Point(left,top), Size: Size(width,height)}
+            }
+            function seatColorFromSeatStatus(seatStatus) {
+                switch(seatStatus) {
+                    case EMPTY: return "white";
+                    case TEAM1: return "#2660A4";
+                    case TEAM2: return "#250902";
+                    case TEAM3: return "#F06C9B";
+                    case TEAM4: return "#F9B9B7";
+                    case TEAM5: return "#FFC857";
+                    case TEAM6: return "#4E6E5D";
+                    case TEAM7: return "#291528";
+                    case TEAM8: return "#C3E991";
+                    case TEAM9: return "#9FC5E8";
+                    case TEAM10: return "#F7A072";
+                    case TEAM11: return "#96C9DC";
+                    default: return "black"; // Invalid value...
+                }
+            }
+            function mapSeatStatusToSeatColor(seats)
+            {
+                var result = {};
+                for(seat in seats) {
+                    result[seat] = seatColorFromSeatStatus(seats[seat])
+                }
+                return result;
+            }
+            function seatKeyFromPosition(row,col) {
+                return JSON.stringify([row,col]);
+            }
+            function seatRowFromKey(key) {
+                return (JSON.parse(key))[0];
+            }
+            function seatColFromKey(key) {
+                return (JSON.parse(key)[1]);
+            }
+            function getSeatInfo(numSquares) {
+                let gridSize = Math.round(Math.sqrt(numSquares));
+                var result = { NRows: gridSize, NColumns: gridSize, Seats : {} };
+
+                for(row = 0; row < gridSize; row++) {
+                    for( col = 0; col < gridSize; col++ ) {
+                        result.Seats[seatKeyFromPosition(row,col)] = EMPTY;
+                    }
+                }
+
+                result.Seats[seatKeyFromPosition(0, 0)] = TEAM8;
+                result.Seats[seatKeyFromPosition(0, 1)] = TEAM8;
+                result.Seats[seatKeyFromPosition(0, 2)] = TEAM8;
+                result.Seats[seatKeyFromPosition(0, 3)] = TEAM8;
+                result.Seats[seatKeyFromPosition(0, 4)] = TEAM8;
+                result.Seats[seatKeyFromPosition(0, 5)] = TEAM8;
+                result.Seats[seatKeyFromPosition(0, 6)] = TEAM8;
+                result.Seats[seatKeyFromPosition(1, 0)] = TEAM8;
+                result.Seats[seatKeyFromPosition(1, 1)] = TEAM8;
+                result.Seats[seatKeyFromPosition(1, 2)] = TEAM8;
+                result.Seats[seatKeyFromPosition(1, 3)] = TEAM8;
+                result.Seats[seatKeyFromPosition(1, 4)] = TEAM8;
+                result.Seats[seatKeyFromPosition(1, 5)] = TEAM8;
+                result.Seats[seatKeyFromPosition(1, 6)] = TEAM8;
+                result.Seats[seatKeyFromPosition(2, 0)] = TEAM8;
+                result.Seats[seatKeyFromPosition(2, 1)] = TEAM8;
+                result.Seats[seatKeyFromPosition(2, 2)] = TEAM8;
+                result.Seats[seatKeyFromPosition(2, 3)] = TEAM8;
+                result.Seats[seatKeyFromPosition(2, 4)] = TEAM8;
+                result.Seats[seatKeyFromPosition(2, 5)] = TEAM8;
+                result.Seats[seatKeyFromPosition(2, 6)] = TEAM8;
+
+                result.Seats[seatKeyFromPosition(3, 0)] = TEAM1;
+                result.Seats[seatKeyFromPosition(3, 1)] = TEAM1;
+                result.Seats[seatKeyFromPosition(3, 2)] = TEAM1;
+                result.Seats[seatKeyFromPosition(3, 3)] = TEAM1;
+                result.Seats[seatKeyFromPosition(3, 4)] = TEAM1;
+                result.Seats[seatKeyFromPosition(3, 5)] = TEAM1;
+                result.Seats[seatKeyFromPosition(3, 6)] = TEAM1;
+                result.Seats[seatKeyFromPosition(4, 0)] = TEAM1;
+                result.Seats[seatKeyFromPosition(4, 1)] = TEAM1;
+                result.Seats[seatKeyFromPosition(4, 2)] = TEAM1;
+                result.Seats[seatKeyFromPosition(4, 3)] = TEAM1;
+                result.Seats[seatKeyFromPosition(4, 4)] = TEAM1;
+                result.Seats[seatKeyFromPosition(4, 5)] = TEAM1;
+                result.Seats[seatKeyFromPosition(4, 6)] = TEAM1;
+                result.Seats[seatKeyFromPosition(5, 0)] = TEAM1;
+                result.Seats[seatKeyFromPosition(5, 1)] = TEAM1;
+                result.Seats[seatKeyFromPosition(5, 2)] = TEAM1;
+                result.Seats[seatKeyFromPosition(5, 3)] = TEAM1;
+                result.Seats[seatKeyFromPosition(5, 4)] = TEAM1;
+                result.Seats[seatKeyFromPosition(5, 5)] = TEAM1;
+                result.Seats[seatKeyFromPosition(5, 6)] = TEAM1;
+                result.Seats[seatKeyFromPosition(6, 0)] = TEAM1;
+                result.Seats[seatKeyFromPosition(6, 1)] = TEAM1;
+                result.Seats[seatKeyFromPosition(6, 2)] = TEAM1;
+
+                return result;
+            }
+            function renderSeat(ctx,r,fillColor) {
+                var backup = ctx.fillStyle;
+                ctx.strokeStyle = "blue";
+                ctx.rect(r.TopLeft.X+2,r.TopLeft.Y+2,r.Size.Width-4,r.Size.Height-4);
+                ctx.stroke();
+                ctx.fillStyle = fillColor;
+                ctx.fillRect(r.TopLeft.X+3,r.TopLeft.Y+3,r.Size.Width-5,r.Size.Height-5);
+                ctx.fillStyle = backup;
+            }
+            function renderSeatplan(seatInfo) {
+                var nrows = seatInfo.NRows;
+                var ncolumns = seatInfo.NColumns;
+                var seatColors = mapSeatStatusToSeatColor(seatInfo.Seats)
+                var canvas = document.getElementById("seatplan");
+                var ctx = canvas.getContext("2d");
+
+                var borderWidth = 10;
+                var rcContent = Rectangle(
+                    borderWidth
+                    , borderWidth
+                    , canvas.width - 2 * borderWidth
+                    , canvas.height - 2 * borderWidth
+                );
+                var szCell = Size(
+                    Math.floor(rcContent.Size.Width / (ncolumns + 1))
+                    , Math.floor(rcContent.Size.Height / (nrows + 1))
+                );
+                ctx.font = "30px Arial";
+
+                for(row = -1; row < nrows; row++) {
+                    for(col = -1; col < ncolumns; col++ ) {
+                        var r = Rectangle(
+                            rcContent.TopLeft.X + szCell.Width * (col+1)
+                            ,rcContent.TopLeft.Y + szCell.Height * (row+1)
+                            ,szCell.Width
+                            ,szCell.Height
+                            );
+                        var center = Point(szCell.Width / 2, szCell.Height / 2);
+                        if (row == -1 && col == -1) {
+                            // nothing to render.
+                        }
+                        else if(row == -1){
+                            // render column headers as numbers...
+                            ctx.fillStyle = "black";
+                            ctx.textAlign = "center";
+                            ctx.fillText(col.toString(),r.TopLeft.X+center.X,r.TopLeft.Y+center.Y+6);
+                        }
+                        else if(col == -1){
+                            // render row header
+                            ctx.fillStyle = "black";
+                            ctx.textAlign = "center";
+                            ctx.fillText(String.fromCharCode(65 + row),r.TopLeft.X+center.X+4,r.TopLeft.Y+center.Y+6);
+                        }
+                        else
+                        {
+                            // render seat
+                            renderSeat(ctx,r,seatColors[seatKeyFromPosition(row,col)]);
+                        }
+                    }
+                }
+            }
+        </script>
+    </head>
+
+    <body onload = "renderSeatplan(getSeatInfo(43));">
+        <h1>1st Floor Floorplan</h1>
+        <canvas id = "seatplan" width = "600px" height = "500px"></canvas>
+        <p>Color Key: <br>
+            Unused Spaces are white! <br>
+            - Team 1: Dodger Blue <br>
+            - Team 2: Brown <br>
+            - Team 3: Pink <br>
+            - Team 4: Coral <br>
+            - Team 5: Yellow <br>
+            - Team 6: Green <br>
+            - Team 7: Purple <br>
+            - Team 8: Lime <br>
+            - Team 9: Sky Blue <br>
+            - Team 10: Orange <br>
+            - Team 11: Blue <br>
+        </p>
+    </body>
+</html>
