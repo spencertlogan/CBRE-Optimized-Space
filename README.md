@@ -1,4 +1,4 @@
-# CPRE-Optimized-Space
+# CBRE-Optimized-Space
 
 ## Inspiration
 When we saw the CBRE challenge for TAMUHack 2023, our team was excited to take it on. At first, the problem looked simple to implement, but we quickly realized it was more complex. Although our team faced some difficulties along the way, we found a general solution to the problem.
